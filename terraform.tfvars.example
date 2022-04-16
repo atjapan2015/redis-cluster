@@ -1,0 +1,17 @@
+tenancy_ocid     = "ocid1.tenancy.oc1.ToDo"
+user_ocid        = "ocid1.user.oc1.ToDo"
+private_key_path = "/home/oracle/.oci/oci_api_key.pem"
+fingerprint      = "ToDo"
+region           = "ap-chuncheon-1"
+
+compartment_ocid        = "ocid1.compartment.ToDo"
+availablity_domain_name = "bxtG:AP-CHUNCHEON-1-AD-1"
+
+redis_master_count = 3
+redis_replica_count = 3
+
+redis_manager_tag_namespace_name = "ToDO"
+redis_manager_tag_namespace_id = "ToDO"
+redis_manager_tag_name = "release"
+virtual_network_redis_vcn_id = "ToDO"
+subnet_redis_subnet_id = "ToDO"
