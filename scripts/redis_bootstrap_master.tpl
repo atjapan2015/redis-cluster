@@ -11,6 +11,7 @@ REDIS_CONFIG_FILE=/etc/redis.conf
 firewall-offline-cmd --zone=public --add-port=${redis_port1}/tcp
 firewall-offline-cmd --zone=public --add-port=${redis_port2}/tcp
 firewall-offline-cmd --zone=public --add-port=${sentinel_port}/tcp
+firewall-offline-cmd --zone=public --add-port=9121/tcp
 systemctl restart firewalld
 
 # Install wget and gcc
@@ -22,7 +23,7 @@ tar xvzf redis-${redis_version}.tar.gz
 cd redis-${redis_version}
 make install
 
-# Configure Sentinel
+# Configure Redis
 cat << EOF > $REDIS_CONFIG_FILE
 port ${redis_port1}
 cluster-enabled yes
@@ -45,5 +46,27 @@ EOF
 #sentinel parallel-syncs ${master_fqdn[i]}.${redis_prefix}.${redis_prefix}.${redis_domain} 1
 #%{ endfor ~}
 #EOF
+
+# Install Redis Exporter
+useradd --no-create-home --shell /bin/false redis-exporter
+wget https://github.com/oliver006/redis_exporter/releases/download/v1.37.0/redis_exporter-v1.37.0.linux-amd64.tar.gz
+tar xvfz redis_exporter-v1.37.0.linux-amd64.tar.gz
+chmod +x redis_exporter-v1.37.0.linux-amd64/redis_exporter
+mv redis_exporter-v1.37.0.linux-amd64/redis_exporter /usr/local/bin/redis_exporter
+cat << EOF > /etc/systemd/system/redis-exporter.service
+[Unit]
+Description=Redis Exporter
+
+[Service]
+User=redis-exporter
+ExecStart=/usr/local/bin/redis_exporter -redis.addr redis://localhost:6379 -redis.password ${redis_password}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable redis-exporter.service
+systemctl start redis-exporter.service
 
 sleep 30

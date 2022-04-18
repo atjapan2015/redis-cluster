@@ -8,9 +8,10 @@ REDIS_CONFIG_FILE=/etc/redis.conf
 #SENTINEL_CONFIG_FILE=/etc/sentinel.conf
 
 # Setup firewall rules
-firewall-offline-cmd  --zone=public --add-port=${redis_port1}/tcp
-firewall-offline-cmd  --zone=public --add-port=${redis_port2}/tcp
-firewall-offline-cmd  --zone=public --add-port=${sentinel_port}/tcp
+firewall-offline-cmd --zone=public --add-port=${redis_port1}/tcp
+firewall-offline-cmd --zone=public --add-port=${redis_port2}/tcp
+firewall-offline-cmd --zone=public --add-port=${sentinel_port}/tcp
+firewall-offline-cmd --zone=public --add-port=9121/tcp
 systemctl restart firewalld
 
 # Install wget and gcc
@@ -33,5 +34,27 @@ appendonly yes
 requirepass ${redis_password}
 masterauth ${redis_password}
 EOF
+
+# Install Redis Exporter
+useradd --no-create-home --shell /bin/false redis-exporter
+wget https://github.com/oliver006/redis_exporter/releases/download/v1.37.0/redis_exporter-v1.37.0.linux-amd64.tar.gz
+tar xvfz redis_exporter-v1.37.0.linux-amd64.tar.gz
+chmod +x redis_exporter-v1.37.0.linux-amd64/redis_exporter
+mv redis_exporter-v1.37.0.linux-amd64/redis_exporter /usr/local/bin/redis_exporter
+cat << EOF > /etc/systemd/system/redis-exporter.service
+[Unit]
+Description=Redis Exporter
+
+[Service]
+User=redis-exporter
+ExecStart=/usr/local/bin/redis_exporter -redis.addr redis://localhost:6379 -redis.password ${redis_password}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable redis-exporter.service
+systemctl start redis-exporter.service
 
 sleep 30

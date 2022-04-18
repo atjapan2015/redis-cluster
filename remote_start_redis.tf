@@ -110,7 +110,8 @@ resource "null_resource" "redis_master_create_cluster" {
       "sudo -u root /usr/local/bin/redis-cli --cluster create `cat /home/opc/master_list.sh` `cat /home/opc/replica_list.sh` -a ${random_string.redis_password.result} --cluster-replicas ${var.redis_replica_count} --cluster-yes",
       "echo '=== Cluster REDIS created from redis0 node... ==='",
       "echo 'cluster info' | /usr/local/bin/redis-cli -c -a ${random_string.redis_password.result}",
-      "echo 'cluster nodes' | /usr/local/bin/redis-cli -c -a ${random_string.redis_password.result}"
+      "echo 'cluster nodes' | /usr/local/bin/redis-cli -c -a ${random_string.redis_password.result}",
+      "curl -d '{\"name\":\"Redis\",\"type\":\"redis-datasource\",\"typeName\":\"Redis\",\"typeLogoUrl\":\"public/plugins/redis-datasource/img/logo.svg\",\"access\":\"proxy\",\"url\":\"redis://${data.oci_core_vnic.redis_master_vnic[0].private_ip_address}:6379\",\"password\":\"${random_string.redis_password.result}\",\"user\":\"\",\"database\":\"\",\"basicAuth\":false,\"isDefault\":false,\"jsonData\":{\"client\":\"cluster\"},\"readOnly\":false}' -H \"Content-Type: application/json\" -X POST http://admin:secret@localhost:3000/api/datasources"
     ]
   }
 }

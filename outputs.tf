@@ -15,11 +15,11 @@ output "redis_master_private_ip_address" {
 }
 
 output "redis_replica_public_ip_address" {
-  value = {for i in range(var.redis_replica_count) : (i + var.redis_master_count) => data.oci_core_vnic.redis_replica_vnic[i].public_ip_address}
+  value = {for i in range(var.redis_replica_count * var.redis_master_count) : (i + var.redis_master_count) => data.oci_core_vnic.redis_replica_vnic[i].public_ip_address}
 }
 
 output "redis_replica_private_ip_address" {
-value = {for i in range(var.redis_replica_count) : (i + var.redis_master_count) => data.oci_core_vnic.redis_replica_vnic[i].private_ip_address}
+value = {for i in range(var.redis_replica_count * var.redis_master_count) : (i + var.redis_master_count) => data.oci_core_vnic.redis_replica_vnic[i].private_ip_address}
 }
 
 output "redis_password" {
