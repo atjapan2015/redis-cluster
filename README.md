@@ -6,6 +6,9 @@ This reference architecture shows a typical six-node deployment of a Redis clust
 
 For details of the architecture, see [_Deploy a highly available, distributed cache using Redis_](https://docs.oracle.com/en/solutions/deploy-redis-cluster/index.html)
 
+## Redis Release
+https://download.redis.io/releases/
+
 ## Prerequisites
 
 - Permission to `manage` the following types of resources in your Oracle Cloud Infrastructure tenancy: `vcns`, `internet-gateways`, `route-tables`, `security-lists`, `subnets`, `autonomous-database-family`, and `instances`.
@@ -85,3 +88,9 @@ When you no longer need the deployment, you can run this command to destroy the 
 ## Architecture Diagram
 
 ![](./images/oci-redis.png)
+
+### Warning Message
+
+WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+null_resource.redis_replica_start_redis[5] (remote-exec): 16535:M 18 Apr 2022 02:21:39.161 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+

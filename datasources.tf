@@ -70,14 +70,14 @@ data "oci_core_vnic" "redis_master_vnic" {
 }
 
 data "oci_core_vnic_attachments" "redis_replica_vnics" {
-  count               = var.redis_replica_count
+  count               = var.redis_replica_count * var.redis_master_count
   compartment_id      = var.compartment_ocid
   availability_domain = var.availablity_domain_name
   instance_id         = oci_core_instance.redis_replica[count.index].id
 }
 
 data "oci_core_vnic" "redis_replica_vnic" {
-  count   = var.redis_replica_count
+  count   = var.redis_replica_count * var.redis_master_count
   vnic_id = data.oci_core_vnic_attachments.redis_replica_vnics[count.index].vnic_attachments.0.vnic_id
 }
 

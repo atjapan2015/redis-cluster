@@ -2,7 +2,7 @@
 ## All rights reserved. The Universal Permissive License (UPL), Version 1.0 as shown at http://oss.oracle.com/licenses/upl
 
 resource "oci_core_instance" "redis_replica" {
-  count               = var.redis_replica_count
+  count               = var.redis_replica_count * var.redis_master_count
   availability_domain = var.availablity_domain_name
   fault_domain        = "FAULT-DOMAIN-${(count.index+2)%3+1}"
   compartment_id      = var.compartment_ocid

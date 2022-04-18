@@ -4,9 +4,8 @@ exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
 exec 1>/tmp/tflog.out 2>&1
 
-REDIS_VERSION="5.0.7"
 REDIS_CONFIG_FILE=/etc/redis.conf
-SENTINEL_CONFIG_FILE=/etc/sentinel.conf
+#SENTINEL_CONFIG_FILE=/etc/sentinel.conf
 
 # Setup firewall rules
 firewall-offline-cmd  --zone=public --add-port=${redis_port1}/tcp
@@ -36,5 +35,3 @@ masterauth ${redis_password}
 EOF
 
 sleep 30
-#/usr/local/bin/redis-server $REDIS_CONFIG_FILE --daemonize yes
-#nohup /usr/local/bin/redis-server $REDIS_CONFIG_FILE > /tmp/redis-server.log &

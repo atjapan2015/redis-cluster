@@ -16,13 +16,13 @@ variable "redis_master_count" {
 }
 
 variable "redis_replica_count" {
-  description = "Number of redis replica instances"
+  description = "Number of redis cluster replicas"
   type        = number
-  default     = 3
+  default     = 1
 }
 
 variable "release" {
-  description = "Reference Architecture Release (OCI Architecture Center)"
+  description = "Redis Manager Release"
   default     = "1.1"
 }
 
@@ -43,7 +43,7 @@ variable "redis_domain" {
 }
 
 variable "redis_version" {
-  default = "5.0.7"
+  default = "stable"
 }
 
 variable "redis_port1" {
