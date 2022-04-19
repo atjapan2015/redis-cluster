@@ -16,9 +16,15 @@ variable "redis_master_count" {
 }
 
 variable "redis_replica_count" {
-  description = "Number of redis cluster replicas"
+  description = "Number of redis cluster replicas, availabe value are 0,1,2"
   type        = number
   default     = 1
+}
+
+variable "is_redis_cluster" {
+  description = "true for redis cluster, false for master-slave"
+  type        = bool
+  default     = true
 }
 
 variable "release" {

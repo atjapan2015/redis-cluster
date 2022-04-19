@@ -6,6 +6,11 @@ output "generated_ssh_private_key" {
   sensitive = true
 }
 
+output "ssh_to_redis0" {
+  description = "convenient command to ssh to the redis0 host"
+  value       = "ssh -i id_rsa -o ServerAliveInterval=10 opc@${data.oci_core_vnic.redis_master_vnic[0].public_ip_address}"
+}
+
 output "redis_master_public_ip_address" {
   value = {for i in range(var.redis_master_count) : i => data.oci_core_vnic.redis_master_vnic[i].public_ip_address}
 }
@@ -24,4 +29,8 @@ value = {for i in range(var.redis_replica_count * var.redis_master_count) : (i +
 
 output "redis_password" {
   value = random_string.redis_password.result
+}
+
+output "temp1" {
+  value = data.oci_core_vnic.redis_master_vnic[0].hostname_label
 }
