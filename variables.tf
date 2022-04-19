@@ -62,6 +62,10 @@ variable "ssh_public_key" {
   default = ""
 }
 
+variable "global_password" {
+  default = ""
+}
+
 variable "instance_os" {
   description = "Operating system for compute instances"
   default     = "Oracle Linux"
