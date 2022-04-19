@@ -51,7 +51,7 @@ resource "null_resource" "redis_replica_start_redis" {
 }
 
 resource "null_resource" "redis_master_master_list" {
-  depends_on = [null_resource.redis_master_start_redis]
+  depends_on = [null_resource.redis_replica_start_redis]
   count      = var.is_redis_cluster ? var.redis_master_count : 0
   provisioner "remote-exec" {
     connection {
@@ -118,7 +118,7 @@ resource "null_resource" "redis_master_create_cluster" {
 }
 
 resource "null_resource" "redis_master_start_sentinel" {
-  depends_on = [null_resource.redis_master_master_list]
+  depends_on = [null_resource.redis_master_start_redis]
   count      = var.is_redis_cluster ? 0 : var.redis_master_count
   provisioner "remote-exec" {
     connection {
@@ -142,7 +142,7 @@ resource "null_resource" "redis_master_start_sentinel" {
 }
 
 resource "null_resource" "redis_master_register_grafana" {
-  depends_on = [null_resource.redis_master_create_cluster, null_resource.redis_master_start_sentinel]
+  depends_on = [null_resource.redis_master_create_cluster]
   provisioner "remote-exec" {
     connection {
       type        = "ssh"
