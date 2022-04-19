@@ -30,7 +30,3 @@ value = {for i in range(var.redis_replica_count * var.redis_master_count) : (i +
 output "redis_password" {
   value = random_string.redis_password.result
 }
-
-output "temp1" {
-  value = data.oci_core_vnic.redis_master_vnic[0].hostname_label
-}
