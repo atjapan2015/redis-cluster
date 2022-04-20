@@ -15,10 +15,35 @@ data "oci_core_images" "InstanceImageOCID" {
   }
 }
 
-data "template_file" "key_script" {
-  template = templatefile( "./scripts/sshkey.tpl", {
-    ssh_public_key = tls_private_key.public_private_key_pair.public_key_openssh
-  })
+data "template_file" "redis_rdb_copy_hourly_sh_template" {
+  template = file( "./scripts/redis_rdb_copy_hourly.sh")
+  vars     = {}
+}
+
+data "template_file" "redis_rdb_copy_daily_sh_template" {
+  template = file( "./scripts/redis_rdb_copy_daily.sh")
+  vars     = {}
+}
+
+data "template_file" "redis_rdb_restore_sh_template" {
+  template = file( "./scripts/redis_rdb_restore.sh")
+  vars     = {}
+}
+
+data "template_file" "redis_rdb_copy_hourly_daily_cron_template" {
+  template = file( "./scripts/redis_rdb_copy_hourly_daily.cron")
+  vars     = {}
+}
+
+data "template_file" "cloud_init_file" {
+  template = file("./cloud_init/bootstrap.template.yaml")
+
+  vars = {
+    redis_rdb_copy_hourly_sh_content         = base64gzip(data.template_file.redis_rdb_copy_hourly_sh_template.rendered)
+    redis_rdb_copy_daily_sh_content          = base64gzip(data.template_file.redis_rdb_copy_daily_sh_template.rendered)
+    redis_rdb_restore_sh_content             = base64gzip(data.template_file.redis_rdb_restore_sh_template.rendered)
+    redis_rdb_copy_hourly_daily_cron_content = base64gzip(data.template_file.redis_rdb_copy_hourly_daily_cron_template.rendered)
+  }
 }
 
 data "template_cloudinit_config" "cloud_init" {
@@ -26,9 +51,9 @@ data "template_cloudinit_config" "cloud_init" {
   base64_encode = true
 
   part {
-    filename     = "ainit.sh"
-    content_type = "text/x-shellscript"
-    content      = data.template_file.key_script.rendered
+    filename     = "bootstrap.yaml"
+    content_type = "text/cloud-config"
+    content      = data.template_file.cloud_init_file.rendered
   }
 }
 

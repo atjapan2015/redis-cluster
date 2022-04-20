@@ -24,13 +24,13 @@ tar xvzf redis-${redis_version}.tar.gz
 cd redis-${redis_version}
 make install
 
-mkdir /redis_data
+mkdir /u01/redis_data
 mkdir -p /var/log/redis/
 
 # Configure Redis
 cat << EOF > $REDIS_CONFIG_FILE
 port ${redis_port1}
-dir /redis_data
+dir /u01/redis_data
 pidfile /var/run/redis/redis.pid
 cluster-enabled yes
 cluster-config-file nodes.conf

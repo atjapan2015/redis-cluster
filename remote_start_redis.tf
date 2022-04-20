@@ -2,7 +2,7 @@
 ## All rights reserved. The Universal Permissive License (UPL), Version 1.0 as shown at http://oss.oracle.com/licenses/upl
 
 resource "null_resource" "redis_master_start_redis" {
-  depends_on = [null_resource.redis_master_bootstrap, null_resource.redis_replica_bootstrap]
+  depends_on = [null_resource.redis_master_bootstrap]
   count      = var.redis_master_count
   provisioner "remote-exec" {
     connection {
@@ -16,9 +16,6 @@ resource "null_resource" "redis_master_start_redis" {
     }
     inline = [
       "echo '=== Starting REDIS on redis${count.index} node... ==='",
-      "sudo chmod 777 /etc/redis.conf",
-      "if [[ `hostname -s` != '${data.oci_core_vnic.redis_master_vnic[0].hostname_label}' ]]; then echo 'slaveof ${data.oci_core_vnic.redis_master_vnic[0].private_ip_address} 6379' >> /etc/redis.conf; fi",
-      "sudo chmod 644 /etc/redis.conf",
       "sudo systemctl start redis.service",
       "sleep 5",
       "sudo systemctl status redis.service",
@@ -95,7 +92,7 @@ resource "null_resource" "redis_replica_replica_list" {
 }
 
 resource "null_resource" "redis_master_create_cluster" {
-  depends_on = [null_resource.redis_replica_replica_list]
+  depends_on = [null_resource.redis_master_start_redis, null_resource.redis_replica_replica_list]
   count      = var.is_redis_cluster ? 1 : 0
   provisioner "remote-exec" {
     connection {
@@ -142,7 +139,7 @@ resource "null_resource" "redis_master_start_sentinel" {
 }
 
 resource "null_resource" "redis_master_register_grafana" {
-  depends_on = [null_resource.redis_master_create_cluster]
+  depends_on = [null_resource.redis_master_create_cluster, null_resource.redis_master_start_sentinel]
   provisioner "remote-exec" {
     connection {
       type        = "ssh"

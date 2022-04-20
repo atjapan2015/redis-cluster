@@ -25,17 +25,17 @@ tar xvzf redis-${redis_version}.tar.gz
 cd redis-${redis_version}
 make install
 
-mkdir /redis_data
+mkdir -p /u01/redis_data
 mkdir -p /var/log/redis/
 
 # Configure Redis
 cat << EOF > $REDIS_CONFIG_FILE
 port ${redis_port1}
-dir /redis_data
+dir /u01/redis_data
 pidfile /var/run/redis/redis.pid
 %{ if is_redis_cluster ~}
 cluster-enabled yes
-cluster-config-file nodes.conf
+cluster-config-file /etc/nodes.conf
 cluster-node-timeout 5000
 cluster-slave-validity-factor 0
 cluster-announce-ip $EXTERNAL_IP
