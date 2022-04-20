@@ -10,7 +10,7 @@ availablity_domain_name = "bxtG:AP-CHUNCHEON-1-AD-1"
 global_password = "ToDo"
 
 is_redis_cluster = true
-
+redis_prefix = "rediscluster"
 redis_version = "5.0.9"
 redis_master_count = 3
 redis_replica_count = 1
