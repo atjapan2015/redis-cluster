@@ -19,7 +19,9 @@ resource "null_resource" "redis_master_start_redis" {
       "sudo systemctl start redis.service",
       "sleep 5",
       "sudo systemctl status redis.service",
-      "echo '=== Started REDIS on redis${count.index} node... ==='"
+      "echo '=== Started REDIS on redis${count.index} node... ==='",
+      "echo '=== Register REDIS Exporter to Prometheus... ==='",
+      "curl -X GET http://redismanager:9091/prometheus/targets/add/${data.oci_core_vnic.redis_master_vnic[count.index].hostname_label}_9121"
     ]
   }
 }
@@ -42,13 +44,15 @@ resource "null_resource" "redis_replica_start_redis" {
       "sudo systemctl start redis.service",
       "sleep 5",
       "sudo systemctl status redis.service",
-      "echo '=== Started REDIS on redis${count.index + var.redis_master_count} node... ==='"
+      "echo '=== Started REDIS on redis${count.index + var.redis_master_count} node... ==='",
+      "echo '=== Register REDIS Exporter to Prometheus... ==='",
+      "curl -X GET http://redismanager:9091/prometheus/targets/add/${data.oci_core_vnic.redis_replica_vnic[count.index].hostname_label}_9121"
     ]
   }
 }
 
 resource "null_resource" "redis_master_master_list" {
-  depends_on = [null_resource.redis_replica_start_redis]
+  depends_on = [null_resource.redis_master_bootstrap, null_resource.redis_replica_start_redis]
   count      = var.is_redis_cluster ? var.redis_master_count : 0
   provisioner "remote-exec" {
     connection {
@@ -63,8 +67,8 @@ resource "null_resource" "redis_master_master_list" {
     inline = [
       "echo '=== Starting Create Master List on redis0 node... ==='",
       "sleep 10",
-      "echo -n '${data.oci_core_vnic.redis_master_vnic[count.index].public_ip_address}:${var.redis_port1} ' >> /home/opc/master_list.sh",
-      "echo -n ',{\"host\":\"${data.oci_core_vnic.redis_master_vnic[count.index].public_ip_address}\",\"port\":${var.redis_port1}}' >> /home/opc/master_insight_list.sh",
+      "echo -n '${data.oci_core_vnic.redis_master_vnic[count.index].private_ip_address}:${var.redis_port1} ' >> /home/opc/master_list.sh",
+      "echo -n ',{\"host\":\"${data.oci_core_vnic.redis_master_vnic[count.index].private_ip_address}\",\"port\":${var.redis_port1}}' >> /home/opc/master_insight_list.sh",
       "echo '=== Started Create Master List on redis0 node... ==='"
     ]
   }
@@ -86,8 +90,8 @@ resource "null_resource" "redis_replica_replica_list" {
     inline = [
       "echo '=== Starting Create Replica List on redis0 node... ==='",
       "sleep 10",
-      "echo -n '${data.oci_core_vnic.redis_replica_vnic[count.index].public_ip_address}:${var.redis_port1} ' >> /home/opc/replica_list.sh",
-      "echo -n ',{\"host\":\"${data.oci_core_vnic.redis_replica_vnic[count.index].public_ip_address}\",\"port\":${var.redis_port1}}' >> /home/opc/replica_insight_list.sh",
+      "echo -n '${data.oci_core_vnic.redis_replica_vnic[count.index].private_ip_address}:${var.redis_port1} ' >> /home/opc/replica_list.sh",
+      "echo -n ',{\"host\":\"${data.oci_core_vnic.redis_replica_vnic[count.index].private_ip_address}\",\"port\":${var.redis_port1}}' >> /home/opc/replica_insight_list.sh",
       "echo '=== Started Create Replica List on redis0 node... ==='"
     ]
   }
@@ -154,9 +158,10 @@ resource "null_resource" "redis_master_register_grafana_insight" {
     }
     inline = [
       "echo '=== Register REDIS Datasource to Grafana... ==='",
+      "curl -X DELETE http://admin:${var.global_password}@redismanager:3000/api/datasources/name/${var.redis_prefix}",
       "curl -d '{\"name\":\"${var.redis_prefix}\",\"type\":\"redis-datasource\",\"typeName\":\"Redis\",\"typeLogoUrl\":\"public/plugins/redis-datasource/img/logo.svg\",\"access\":\"proxy\",\"url\":\"redis://${data.oci_core_vnic.redis_master_vnic[0].private_ip_address}:6379\",\"password\":\"\",\"user\":\"\",\"database\":\"\",\"basicAuth\":false,\"isDefault\":false,\"jsonData\":{\"client\":\"cluster\"},\"secureJsonData\":{\"password\":\"${random_string.redis_password.result}\"},\"readOnly\":false}' -H \"Content-Type: application/json\" -X POST http://admin:${var.global_password}@redismanager:3000/api/datasources",
       "echo '=== Register REDIS Datasource to Redis Insight... ==='",
-      "echo -n '{\"name\":\"${var.redis_prefix}\",\"connectionType\":\"CLUSTER\",\"seedNodes\":[{\"host\":\"${data.oci_core_vnic.redis_master_vnic[0].public_ip_address}\",\"port\":${var.redis_port1}}' > /home/opc/redis_insight_payload.json",
+      "echo -n '{\"name\":\"${var.redis_prefix}\",\"connectionType\":\"CLUSTER\",\"seedNodes\":[{\"host\":\"${data.oci_core_vnic.redis_master_vnic[0].private_ip_address}\",\"port\":${var.redis_port1}}' > /home/opc/redis_insight_payload.json",
       "cat /home/opc/master_insight_list.sh | tr '\n' ' ' >> /home/opc/redis_insight_payload.json",
       "cat /home/opc/replica_insight_list.sh | tr '\n' ' ' >> /home/opc/redis_insight_payload.json",
       "echo -n '],\"password\":\"${random_string.redis_password.result}\"}' >> /home/opc/redis_insight_payload.json",

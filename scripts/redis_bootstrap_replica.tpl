@@ -24,7 +24,7 @@ tar xvzf redis-${redis_version}.tar.gz
 cd redis-${redis_version}
 make install
 
-mkdir /u01/redis_data
+mkdir -p /u01/redis_data
 mkdir -p /var/log/redis/
 
 # Configure Redis
@@ -32,71 +32,27 @@ cat << EOF > $REDIS_CONFIG_FILE
 port ${redis_port1}
 dir /u01/redis_data
 pidfile /var/run/redis/redis.pid
+%{ if is_redis_cluster ~}
 cluster-enabled yes
-cluster-config-file nodes.conf
+cluster-config-file /etc/nodes.conf
 cluster-node-timeout 5000
 cluster-slave-validity-factor 0
 cluster-announce-ip $EXTERNAL_IP
 cluster-migration-barrier 2
-appendonly yes
-requirepass ${redis_password}
-masterauth ${redis_password}
-protected-mode yes
-tcp-backlog 511
-timeout 0
-tcp-keepalive 300
-daemonize no
-supervised no
-loglevel notice
-logfile /var/log/redis/redis.log
-databases 16
-always-show-logo yes
+%{ endif ~}
+%{ if redis_config_is_use_rdb ~}
 save 900 1
 save 300 10
 save 60 10000
-stop-writes-on-bgsave-error yes
-rdbcompression yes
-rdbchecksum yes
 dbfilename dump.rdb
-replica-serve-stale-data yes
-replica-read-only yes
-repl-diskless-sync no
-repl-disable-tcp-nodelay no
-replica-priority 100
-lazyfree-lazy-eviction no
-lazyfree-lazy-expire no
-lazyfree-lazy-server-del no
-replica-lazy-flush no
-appendfilename "appendonly.aof"
-appendfsync everysec
-no-appendfsync-on-rewrite no
-auto-aof-rewrite-percentage 100
-auto-aof-rewrite-min-size 64mb
-aof-load-truncated yes
-aof-use-rdb-preamble yes
-lua-time-limit 5000
-slowlog-log-slower-than 10000
-slowlog-max-len 128
-latency-monitor-threshold 0
-notify-keyspace-events ""
-hash-max-ziplist-entries 512
-hash-max-ziplist-value 64
-list-max-ziplist-size -2
-list-compress-depth 0
-set-max-intset-entries 512
-zset-max-ziplist-entries 128
-zset-max-ziplist-value 64
-hll-sparse-max-bytes 3000
-stream-node-max-bytes 4096
-stream-node-max-entries 100
-activerehashing yes
-client-output-buffer-limit normal 0 0 0
-client-output-buffer-limit replica 256mb 64mb 60
-client-output-buffer-limit pubsub 32mb 8mb 60
-hz 10
-dynamic-hz yes
-aof-rewrite-incremental-fsync yes
-rdb-save-incremental-fsync yes
+%{ endif ~}
+%{ if redis_config_is_use_aof ~}
+appendonly yes
+%{ else ~}
+appendonly no
+%{ endif ~}
+requirepass ${redis_password}
+masterauth ${redis_password}
 EOF
 
 cat << EOF > /etc/systemd/system/redis.service

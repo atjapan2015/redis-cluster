@@ -64,6 +64,18 @@ variable "sentinel_port" {
   default = "26379"
 }
 
+variable "redis_config_is_use_rdb" {
+  description = "true for use rdb, false for not use rdb"
+  type        = bool
+  default     = true
+}
+
+variable "redis_config_is_use_aof" {
+  description = "true for use aof, false for not use aof"
+  type        = bool
+  default     = false
+}
+
 variable "ssh_public_key" {
   default = ""
 }

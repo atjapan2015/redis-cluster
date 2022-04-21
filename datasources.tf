@@ -59,28 +59,35 @@ data "template_cloudinit_config" "cloud_init" {
 
 data "template_file" "redis_bootstrap_master_template" {
   template = templatefile("./scripts/redis_bootstrap_master.tpl", {
-    count              = var.redis_master_count
-    is_redis_cluster   = var.is_redis_cluster
-    redis_prefix       = var.redis_prefix
-    redis_domain       = var.redis_domain
-    redis_version      = var.redis_version
-    redis_port1        = var.redis_port1
-    redis_port2        = var.redis_port2
-    sentinel_port      = var.sentinel_port
-    redis_password     = random_string.redis_password.result
-    master_private_ips = data.oci_core_vnic.redis_master_vnic.*.private_ip_address
-    master_fqdn        = data.oci_core_vnic.redis_master_vnic.*.hostname_label
+    is_redis_cluster        = var.is_redis_cluster
+    redis_prefix            = var.redis_prefix
+    redis_domain            = var.redis_domain
+    redis_version           = var.redis_version
+    redis_port1             = var.redis_port1
+    redis_port2             = var.redis_port2
+    sentinel_port           = var.sentinel_port
+    redis_config_is_use_rdb = var.redis_config_is_use_rdb
+    redis_config_is_use_aof = var.redis_config_is_use_aof
+    redis_password          = random_string.redis_password.result
+    master_private_ips      = data.oci_core_vnic.redis_master_vnic.*.private_ip_address
+    master_fqdn             = data.oci_core_vnic.redis_master_vnic.*.hostname_label
   })
 }
 
 data "template_file" "redis_bootstrap_replica_template" {
   template = templatefile("./scripts/redis_bootstrap_replica.tpl", {
-    is_redis_cluster = var.is_redis_cluster
-    redis_version    = var.redis_version
-    redis_port1      = var.redis_port1
-    redis_port2      = var.redis_port2
-    sentinel_port    = var.sentinel_port
-    redis_password   = random_string.redis_password.result
+    is_redis_cluster        = var.is_redis_cluster
+    redis_prefix            = var.redis_prefix
+    redis_domain            = var.redis_domain
+    redis_version           = var.redis_version
+    redis_port1             = var.redis_port1
+    redis_port2             = var.redis_port2
+    sentinel_port           = var.sentinel_port
+    redis_config_is_use_rdb = var.redis_config_is_use_rdb
+    redis_config_is_use_aof = var.redis_config_is_use_aof
+    redis_password          = random_string.redis_password.result
+    master_private_ips      = data.oci_core_vnic.redis_master_vnic.*.private_ip_address
+    master_fqdn             = data.oci_core_vnic.redis_master_vnic.*.hostname_label
   })
 }
 
